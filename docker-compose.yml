@@ -1,45 +1,32 @@
 version: "3.9"
+
 services:
   web:
     build: ./web
     ports:
       - "8080:80"
-    depends_on: [api]
+    depends_on:
+      - api
+      - bot
     environment:
-      - API_BASE_URL=https://${DOMAIN}/api
-    restart: always
+      DOMAIN: ${DOMAIN}
+      PUBLIC_BASE: ${PUBLIC_BASE}
+      WEBAPP_ORIGIN: ${WEBAPP_ORIGIN}
 
   api:
     build: ./api
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
-      - WEBAPP_ORIGIN=https://${DOMAIN}
+      DATABASE_URL: ${DATABASE_URL}
+      WEBAPP_ORIGIN: ${WEBAPP_ORIGIN}
     expose:
       - "8000"
-    restart: always
 
   bot:
     build: ./bot
     environment:
-      - TG_BOT_TOKEN=${TG_BOT_TOKEN}
-      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
-      - PUBLIC_BASE=https://${DOMAIN}
-      - API_BASE=https://${DOMAIN}/api
-      - WEBHOOK_PATH=/bot/webhook
-      - DATABASE_URL=${DATABASE_URL}
-    depends_on: [api]
-    restart: always
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+      API_BASE: https://${DOMAIN}/api
+    expose:
+      - "8081"
 
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: ${PG_DB}
-      POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PG_PASS}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: always
-
-volumes:
-  pgdata:
