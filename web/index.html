@@ -1,4 +1,87 @@
-<!doctype html><meta charset="utf-8">
-<title>ButonTap placeholder</title>
-<h1>OK: static works</h1>
-<a href="/healthz">/healthz</a>
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
+    <title>Unity Web Player | ButonTap</title>
+
+    <!-- Telegram WebApp API + конфиг для платежного бриджа -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      // Конфиг, который читает ваш .jslib-бригдже (можно расширять при необходимости)
+      window.BUTON_PAY = {
+        // endpoint: "/api/invoice",   // если нужен бекенд, который вернёт invoice url/slug
+        devAutoSuccess: false
+        // links: { "com.buton.gems_20": "https://t.me/your_bot?start=invoice-XXXX" } // прямые invoice-ссылки (опционально)
+      };
+
+      (function () {
+        try {
+          const tg = window.Telegram?.WebApp;
+          tg?.ready();
+          tg?.expand?.(); // раскрыть WebApp
+          // Тема Telegram → фон страницы (приятнее встраивается в клиент)
+          const bg = tg?.themeParams?.bg_color;
+          if (bg) document.documentElement.style.background = "#" + bg;
+        } catch (e) {}
+      })();
+    </script>
+
+    <style>
+      html, body {
+        margin: 0; padding: 0; height: 100%; width: 100%;
+        background: #000; /* перезапишется темой Telegram, если она есть */
+      }
+      #unity-canvas {
+        display: block;
+        width: 960px;
+        height: 600px;
+        background: #231F20;
+      }
+    </style>
+  </head>
+
+  <body style="text-align:center;">
+    <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+
+
+    <!-- Загрузчик Unity -->
+    <script src="Build/butontapgame.loader.js"></script>
+
+    <script>
+      // Мобильная адаптация: холст на весь экран
+      (function(){
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          var canvas = document.querySelector("#unity-canvas");
+          canvas.style.width = "100%";
+          canvas.style.height = "100%";
+          canvas.style.position = "fixed";
+          document.body.style.textAlign = "left";
+
+        }
+      })();
+
+      // Запуск Unity; делаем инстанс глобальным, чтобы .jslib мог звать SendMessage
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        arguments: [],
+        dataUrl: "Build/butontapgame.data.unityweb",
+        frameworkUrl: "Build/butontapgame.framework.js.unityweb",
+        codeUrl: "Build/butontapgame.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Hakaki",
+        productName: "ButonTap",
+        productVersion: "1.0"
+        // matchWebGLToCanvasSize: false,
+        // devicePixelRatio: 1,
+      }).then(function (unityInstance) {
+        // доступен как window.unityInstance для JS-бригджа и отладки
+        window.unityInstance = unityInstance;
+
+      }).catch(function (message) {
+        // В проде лучше console.error, но оставим alert как в шаблоне Unity
+        alert(message);
+      });
+    </script>
+  </body>
+</html>
