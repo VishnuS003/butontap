@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports: ["8080:80"]
+    depends_on: [api, bot]
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    expose: ["8000"]
+    environment:
+      DATABASE_URL: "${DATABASE_URL}"
+      WEBAPP_ORIGIN: "*"
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    expose: ["8081"]
+    environment:
+      TG_BOT_TOKEN: "${TG_BOT_TOKEN}"
+      WEBHOOK_SECRET: "${WEBHOOK_SECRET}"
+      API_BASE: "https://${DOMAIN}/api"
+    restart: unless-stopped
